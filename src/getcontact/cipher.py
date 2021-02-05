@@ -17,31 +17,23 @@ class Cipher:
         self.update_cipher()
 
     def update_cipher(self):
-        self.cipher_aes = AES.new(
-            codecs.decode(self.config.AES_KEY, "hex"), AES.MODE_ECB
-        )
+        self.cipher_aes = AES.new(codecs.decode(self.config.AES_KEY, "hex"),
+                                  AES.MODE_ECB)
 
     def pad_data(self, s):
-        return bytes(s + (self.BS - len(s) %
-                          self.BS) * chr(self.BS - len(s) %
-                                         self.BS), "utf8")
+        return bytes(
+            s + (self.BS - len(s) % self.BS) * chr(self.BS - len(s) % self.BS),
+            "utf8")
 
     def unpad_data(self, s):
-        return s[0: -ord(s[-1])]
-
-    def calculate_new_aes_key_by_server(self, server_key):
-        key = int(server_key) ** self.config.PRIVATE_KEY % self.config.MOD_EXP
-        new_key = hashlib.sha256(bytearray(str(key), "utf-8")).hexdigest()
-        return str(new_key)
+        return s[0:-ord(s[-1])]
 
     def create_signature(self, payload, timestamp):
-        message = bytes(
-            self.format_message_to_hmac(
-                payload, timestamp), "utf8")
+        message = bytes(self.format_message_to_hmac(payload, timestamp),
+                        "utf8")
         secret = bytes(self.config.HMAC_KEY, "utf8")
         signature = self.encode_b64(
-            hmac.new(secret, msg=message, digestmod=hashlib.sha256).digest()
-        )
+            hmac.new(secret, msg=message, digestmod=hashlib.sha256).digest())
         return signature
 
     def format_message_to_hmac(self, msg, timestamp):
